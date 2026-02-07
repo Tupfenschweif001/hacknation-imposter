@@ -1,14 +1,23 @@
-from flask import Flask, request
+from pathlib import Path
+import sys
+
+from flask import Flask, request, send_from_directory
 from twilio.twiml.voice_response import VoiceResponse, Gather
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from test.random_text import test_tts_twillio
 
 app = Flask(__name__)
 
+
+@app.route("/audio/<path:filename>")
+def serve_audio(filename):
+    audio_dir = Path(__file__).resolve().parents[1] / "language_output"
+    return send_from_directory(audio_dir, filename)
+
 def llm_reply(user_text):
-    """Placeholder for the LLM reply.
-    Expects a public audio URL (MP3/WAV) that Twilio can play.
-    """
-    # TODO: Replace with your real LLM/TTS call
-    return "/test/test_audio.mp3"
+    return test_tts_twillio()
+    #return "/test/test_audio.mp3"
 
 def llm_start():
     return "/test/test_audio.mp3"
