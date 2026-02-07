@@ -13,7 +13,7 @@ client = Client(account_sid, auth_token)
 
 # 2. Der Anruf starten
 # Damit Twilio mit deinem lokalen Server sprechen kann, brauchen wir die öffentliche URL (Dev Tunnel/Ngrok).
-webhook_url = "https://v1h02wnp-5001.euw.devtunnels.ms".strip().rstrip('/')
+webhook_url = os.getenv("PUBLIC_BASE_URL", "http://127.0.0.1:5001").strip().rstrip('/')
 
 # Sicherstellen, dass die Route stimmt
 if not webhook_url.endswith('/voice'):
