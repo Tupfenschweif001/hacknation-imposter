@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 from elevenlabs.client import ElevenLabs
-from elevenlabs.play import play
 
 load_dotenv(override=True)
 
@@ -9,7 +8,9 @@ client = ElevenLabs(api_key=os.getenv("meinapitoken"))
 api_key = os.getenv("meinapitoken")
 a = "The connection is finally working!" #change this to the LLM response
 voice_1 = "9BWtsMINqrJLrRacOk9x"
-
+client = ElevenLabs(api_key=api_key)
+print("Generating dialogue...")
+dialogue_bytes = b""
 if not api_key:
     print("❌ TokenERROR")
     exit()
@@ -26,23 +27,16 @@ try:
     #     ],
     #     remove_background_noise=True
     # )
+    audio_stream = client.text_to_speech.stream(
+            voice_id=voice_1,
+            output_format="mp3_44100_128",
+            text=a,
+            model_id="eleven_multilingual_v2"
+        )
 
-    client = ElevenLabs(api_key=api_key)
-    print("Generating dialogue...")
-    dialogue_bytes = b""
-
-    print(f"Generating voice: {voice_1}")
-    response = client.text_to_speech.convert(
-        text=a,
-        voice_id=voice_1,
-        output_format="mp3_44100_128",
-        model_id="eleven_multilingual_v2"
-    )
-
-    print("Playing full dialogue...")
+        # Write stream to file manually
     with open("output.mp3", "wb") as f:
-        for chunk in response:
+        for chunk in audio_stream:
             f.write(chunk)
-
 except Exception as e:
     print(f"An error occurred: {e}")
