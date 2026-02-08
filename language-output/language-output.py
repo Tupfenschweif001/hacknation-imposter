@@ -44,7 +44,7 @@ def newvoice():
         print("❌ TokenERROR")
         exit()
     try:
-        response = client.voices.ivc.create( ############# create a client voice
+        response = client.voices.ivc.create( ########## create a client voice
             name="My Custom Voice",
             description="A friendly voice for my application",
             files=[
@@ -58,3 +58,4 @@ def newvoice():
         print(f"An error occurred: {e}")
  
         #testtest
+talk("hallo welt!")
