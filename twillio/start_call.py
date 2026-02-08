@@ -1,4 +1,5 @@
 import os
+import urllib.parse
 from dotenv import load_dotenv
 from twilio.rest import Client
 
@@ -22,10 +23,27 @@ if not webhook_url.endswith('/voice'):
 
 
 
-def start_call(number=None):
+def start_call(number=None, request_id=None, title=None, description=None):
     to_number = number or os.getenv('TARGET_PHONE_NUMBER')
     if not to_number:
         raise ValueError("TARGET_PHONE_NUMBER ist nicht gesetzt und keine Nummer wurde übergeben.")
+
+    # Parameter vorbereiten
+    params = {}
+    if request_id:
+        params['request_id'] = request_id
+    if title:
+        params['title'] = title
+    if description:
+        # Achtung: Zu lange Beschreibungen können die URL-Länge sprengen!
+        params['description'] = description
+
+    # URL zusammenbauen
+    call_url = webhook_url
+    if params:
+        # urlencode kümmert sich um Sonderzeichen (Leerzeichen -> %20 etc.)
+        query_string = urllib.parse.urlencode(params)
+        call_url = f"{webhook_url}?{query_string}"
 
     call = client.calls.create(
         # Wohin soll angerufen werden? (Muss im Trial-Modus verifiziert sein!)
@@ -33,7 +51,7 @@ def start_call(number=None):
         # Von welcher Nummer kommt der Anruf? (Deine Twilio-Nummer)
         from_=os.getenv('TWILIO_PHONE_NUMBER'),
         # Hier sagen wir Twilio: "Lade deine Anweisungen von dieser URL"
-        url=webhook_url
+        url=call_url
     )
 
     print(f"Anruf gestartet! SID: {call.sid}")
@@ -41,7 +59,12 @@ def start_call(number=None):
 
 
 if __name__ == "__main__":
-    start_call()
+    # Test request_id mit Daten
+    start_call(
+        request_id="test_request_id",
+        title="Heizung kaputt",
+        description="Wasser läuft aus dem Heizkörper im Wohnzimmer."
+    )
 
 
 

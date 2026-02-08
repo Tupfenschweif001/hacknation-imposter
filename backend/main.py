@@ -68,18 +68,24 @@ async def process_request(payload: ProcessRequestPayload, background_tasks: Back
         raise HTTPException(status_code=400, detail="Invalid request")
 
     # Der Task wird in den Hintergrund verschoben. Die API antwortet SOFORT.
-    background_tasks.add_task(start_new_call, payload.request_id)
+    background_tasks.add_task(
+        start_new_call, 
+        request_id=payload.request_id,
+        number=payload.number_to_call,
+        title=payload.title,
+        description=payload.description
+    )
     
     return ProcessRequestResponse(status="accepted", request_id=payload.request_id)
 
 
-async def start_new_call(request_id):
+async def start_new_call(request_id, number=None, title=None, description=None):
     """
     Startet den Anruf asynchron. Wenn wir außerhalb der Geschäftszeiten sind,
     wartet diese Funktion (non-blocking) bis zur nächsten Startzeit.
     """
     if is_business_hours():
-        start_call()
+        start_call(number=number, request_id=request_id, title=title, description=description)
         return
 
     run_at = next_business_datetime()
@@ -91,7 +97,7 @@ async def start_new_call(request_id):
         await asyncio.sleep(delay_seconds)
 
     print("Geschäftszeit erreicht. Starte Anruf jetzt.")
-    start_call()
+    start_call(number=number, request_id=request_id, title=title, description=description)
         
 
 

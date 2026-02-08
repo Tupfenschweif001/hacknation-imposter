@@ -108,8 +108,8 @@ def main():
     print("CLI Twilio Simulator")
     print("--------------------")
 
-    base_url = input("Base URL (e.g. http://127.0.0.1:5001): ").strip().rstrip("/")
-    start_url = f"{base_url}/start_conversation"
+    base_url = "http://127.0.0.1:5001"
+    start_url = f"{base_url}/voice"
 
     call_sid = "SIMULATED_CALL_SID"
     twiml = fetch_twiml(start_url, data={"CallSid": call_sid})
