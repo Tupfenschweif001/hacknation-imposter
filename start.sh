@@ -3,8 +3,8 @@
 echo "🚀 Starting Backend and Frontend..."
 
 # Backend starten
+source .venv/bin/activate
 cd backend
-source language-output/bin/activate
 uvicorn main:app --reload --port 8000 &
 BACKEND_PID=$!
 
