@@ -15,20 +15,20 @@ export function RequestCard({ request }: RequestCardProps) {
 
   return (
     <Link href={`/requests/${request.id}`}>
-      <Card className="rounded-2xl hover:shadow-md transition-shadow cursor-pointer border-gray-200">
+      <Card className="rounded-2xl hover:shadow-md transition-shadow cursor-pointer border-border">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-gray-900 line-clamp-2">
+            <h3 className="font-semibold text-foreground line-clamp-2">
               {request.title}
             </h3>
             <StatusBadge status={request.status} />
           </div>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
             {request.description}
           </p>
-          <div className="flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Updated {timeAgo}</span>
           </div>
         </CardContent>

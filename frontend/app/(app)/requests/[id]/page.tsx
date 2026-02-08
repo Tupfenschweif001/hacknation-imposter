@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/status-badge';
 import { Timeline } from '@/components/timeline';
-import { ArrowLeft, Phone, MapPin, Calendar, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Phone, MapPin, Calendar, AlertCircle, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function RequestDetailPage() {
@@ -21,6 +21,8 @@ export default function RequestDetailPage() {
   const [request, setRequest] = useState<Request | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     fetchRequestData();
@@ -32,6 +34,28 @@ export default function RequestDetailPage() {
 
     return () => clearInterval(interval);
   }, [requestId]);
+
+  const handleDelete = async () => {
+    if (!request) return;
+    
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('requests')
+        .delete()
+        .eq('id', request.id);
+
+      if (error) throw error;
+
+      toast.success('Request deleted successfully');
+      router.push('/dashboard');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete request');
+    } finally {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
 
   const fetchRequestData = async (silent = false) => {
     try {
@@ -154,7 +178,7 @@ export default function RequestDetailPage() {
       <div className="p-8 max-w-5xl mx-auto">
         <Card className="rounded-2xl">
           <CardContent className="pt-6">
-            <p className="text-center text-gray-600">Request not found</p>
+            <p className="text-center text-muted-foreground">Request not found</p>
           </CardContent>
         </Card>
       </div>
@@ -163,14 +187,56 @@ export default function RequestDetailPage() {
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
-      <Button
-        variant="ghost"
-        onClick={() => router.push('/dashboard')}
-        className="mb-6 rounded-xl"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Dashboard
-      </Button>
+      <div className="flex items-center justify-between mb-6">
+        <Button
+          variant="ghost"
+          onClick={() => router.push('/dashboard')}
+          className="rounded-xl"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Dashboard
+        </Button>
+
+        {!showDeleteConfirm ? (
+          <Button
+            variant="outline"
+            onClick={() => setShowDeleteConfirm(true)}
+            className="rounded-xl text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950 border-red-200"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete Request
+          </Button>
+        ) : (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteConfirm(false)}
+              disabled={deleting}
+              className="rounded-xl"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="rounded-xl"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Confirm Delete
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+      </div>
 
       <div className="space-y-6">
         {/* Header */}
@@ -195,37 +261,37 @@ export default function RequestDetailPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h4 className="text-sm font-medium text-gray-500 mb-1">Description</h4>
-              <p className="text-gray-900">{request.description}</p>
+              <h4 className="text-sm font-medium text-muted-foreground mb-1">Description</h4>
+              <p className="text-foreground">{request.description}</p>
             </div>
 
             <Separator />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h4 className="text-sm font-medium text-gray-500 mb-1 flex items-center gap-2">
+                <h4 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
                   <Phone className="w-4 h-4" />
                   Callback Number
                 </h4>
-                <p className="text-gray-900">{request.callback_number}</p>
+                <p className="text-foreground">{request.callback_number}</p>
               </div>
 
               {request.number_to_call && (
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-1 flex items-center gap-2">
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
                     <Phone className="w-4 h-4" />
                     Number to Call
                   </h4>
-                  <p className="text-gray-900">{request.number_to_call}</p>
+                  <p className="text-foreground">{request.number_to_call}</p>
                 </div>
               )}
 
               <div>
-                <h4 className="text-sm font-medium text-gray-500 mb-1 flex items-center gap-2">
+                <h4 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   Preferred Time Window
                 </h4>
-                <p className="text-gray-900">{request.preferred_time}</p>
+                <p className="text-foreground">{request.preferred_time}</p>
               </div>
             </div>
           </CardContent>
@@ -238,7 +304,7 @@ export default function RequestDetailPage() {
               <CardTitle>Summary</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-900 whitespace-pre-wrap">{request.summary}</p>
+              <p className="text-foreground whitespace-pre-wrap">{request.summary}</p>
             </CardContent>
           </Card>
         )}

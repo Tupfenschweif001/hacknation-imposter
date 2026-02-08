@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { LayoutDashboard, Plus, User, LogOut, Phone } from 'lucide-react';
 import { toast } from 'sonner';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -42,7 +43,7 @@ export function Sidebar() {
   ];
 
   return (
-    <div className="flex flex-col h-full bg-white border-r border-gray-200">
+    <div className="flex flex-col h-full bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800">
       <div className="p-6">
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center">
@@ -52,7 +53,7 @@ export function Sidebar() {
             <h1 className="text-xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
               Voice AI
             </h1>
-            <p className="text-xs text-gray-500">Agent Dashboard</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Agent Dashboard</p>
           </div>
         </div>
       </div>
@@ -70,8 +71,8 @@ export function Sidebar() {
                 variant={isActive ? 'secondary' : 'ghost'}
                 className={`w-full justify-start rounded-xl ${
                   isActive
-                    ? 'bg-violet-50 text-violet-700 hover:bg-violet-100'
-                    : 'hover:bg-gray-50'
+                    ? 'bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-950 dark:text-violet-300'
+                    : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                 }`}
               >
                 <Icon className="mr-2 h-4 w-4" />
@@ -84,10 +85,15 @@ export function Sidebar() {
 
       <Separator />
 
-      <div className="p-4">
+      <div className="p-4 space-y-2">
+        <div className="flex items-center justify-between px-3 py-2">
+          <span className="text-sm text-gray-600 dark:text-gray-400">Theme</span>
+          <ThemeToggle />
+        </div>
+        
         <Button
           variant="ghost"
-          className="w-full justify-start rounded-xl hover:bg-red-50 hover:text-red-600"
+          className="w-full justify-start rounded-xl hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950"
           onClick={handleLogout}
         >
           <LogOut className="mr-2 h-4 w-4" />

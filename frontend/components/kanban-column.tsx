@@ -12,14 +12,14 @@ export function KanbanColumn({ title, requests, emptyMessage = 'No requests' }: 
   return (
     <div className="flex flex-col h-full">
       <div className="mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-        <p className="text-sm text-gray-500">{requests.length} request{requests.length !== 1 ? 's' : ''}</p>
+        <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+        <p className="text-sm text-muted-foreground">{requests.length} request{requests.length !== 1 ? 's' : ''}</p>
       </div>
       <div className="flex-1 space-y-3 overflow-y-auto pr-2">
         {requests.length === 0 ? (
-          <Card className="rounded-2xl border-dashed border-2 border-gray-200 bg-gray-50">
+          <Card className="rounded-2xl border-dashed border-2 border-border bg-muted/30">
             <div className="p-8 text-center">
-              <p className="text-sm text-gray-500">{emptyMessage}</p>
+              <p className="text-sm text-muted-foreground">{emptyMessage}</p>
             </div>
           </Card>
         ) : (
