@@ -53,4 +53,4 @@ try:
     else:
         print("Error: Could not find a JSON list ('[...]') in the provided text.")
 except json.JSONDecodeError as e:
-    print(f"Error parsing JSON: {e}")
+    print(f"Error parsing JSON: {e}") ####
