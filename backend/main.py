@@ -4,7 +4,12 @@ import asyncio
 import time
 from datetime import datetime, timedelta, time as dtime
 import os
+import sys
+from pathlib import Path
 from typing import Optional
+
+# Füge das Root-Verzeichnis zum Python-Pfad hinzu, damit 'twillio' gefunden wird
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, BackgroundTasks
