@@ -1,57 +1,37 @@
 # Voice AI Agent - Hacknation Imposter
 
-Demo-Webapp für einen Voice-AI-Agenten, der Telefonate führt und Termine bucht. Entwickelt für den Hacknation Hackathon 2026.
-
-## 📁 Projektstruktur
-
-```
-hacknation-imposter/
-├── frontend/           # Next.js Frontend-Anwendung
-│   ├── app/           # Next.js App Router
-│   ├── components/    # React-Komponenten
-│   ├── lib/           # Utilities & Types
-│   └── README.md      # Frontend-Dokumentation
-├── requirements.txt   # Python Dependencies (Backend)
-└── test.py           # Backend-Tests
-```
+Demo-Webapp of a Voice-Agent that manages phone calls and appointments. Developed for the hack-nation hackathon 2026.
 
 ## 🚀 Quick Start
 
-### Frontend starten
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Siehe [frontend/QUICKSTART.md](frontend/QUICKSTART.md) für eine detaillierte Anleitung.
-
-## 📚 Dokumentation
-
-- **Frontend**: [frontend/README.md](frontend/README.md)
-- **Quick Start**: [frontend/QUICKSTART.md](frontend/QUICKSTART.md)
-- **Supabase Schema**: [frontend/supabase-schema.sql](frontend/supabase-schema.sql)
+1. clone the git repository
+2. add a local .env file in the outer scope
+3. add the nessecary api-tokens in the following format:
+     - TWILIO_ACCOUNT_SID= ## add you twilio account id
+     - TWILIO_AUTH_TOKEN= ## add your twilio authentication token 
+     - TWILIO_PHONE_NUMBER=+17348758446
+     - TARGET_PHONE_NUMBER=+4917645628259 ##
+     - ELEVENLABS_API_TOKEN= ## add your elevenlabs_token_here
+     - PUBLIC_BASE_URL=https://hacknation-imposter.onrender.com ## this stays as it is
+     - GOOGLE_API_KEY=   ## add your google_api_token 
 
 ## 🎯 Features
 
-### ✅ Implementiert
+### ✅ Implementet
 
-- **Authentifizierung**: Login & Registrierung mit Supabase
-- **Dashboard**: Kanban-Board mit 3 Spalten
-- **Request-Management**: Erstellen und Verwalten von Terminanfragen
-- **Live-Updates**: Polling alle 3 Sekunden für Echtzeit-Status
-- **Timeline**: Event-Historie für jede Anfrage
-- **Profil**: Persönliche Informationen verwalten
-- **Modernes Design**: Lila-Akzent, rounded cards, minimalistisch
+- **Authentification**: login & registration with Supabase
+- **Request-management**: creating and managing of appointments
+- **Timeline**: Event-history for every request
+- **Profil**: access and change profile information
+- **Modern design**: purple-accent, rounded cards, minimalistic design
+- **Darkmode toggle**
+- **nearest doctor search**: prototype of an integrated search for the nearest doctor including their phonenumber
 
-### 🚧 Geplant
-
-- Darkmode Toggle
+### 🚧 planed
 - Google Calendar Integration
-- WebSocket statt Polling
-- Request-Abbruch-Funktion
-- Push-Benachrichtigungen
+- WebSocket instead of polling
+- Request-cancel-function
+- Push-notification
 
 ## 🛠️ Tech Stack
 
@@ -62,15 +42,11 @@ Siehe [frontend/QUICKSTART.md](frontend/QUICKSTART.md) für eine detaillierte An
 - shadcn/ui
 - Supabase (Auth + Database)
 
-### Backend (geplant)
+### Backend ()
 - Python
 - Voice AI Integration
-- Telefonie-API
+- integration of the ElevenLabs-API
 
 ## 👥 Team
 
 Hacknation Hackathon 2026
-
-## 📝 Lizenz
-
-MIT
