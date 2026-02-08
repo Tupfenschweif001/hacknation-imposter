@@ -35,7 +35,6 @@ if [ ! -d "node_modules" ]; then
     npm install
     echo "✅ Frontend dependencies installed"
 fi
-
 # 5. Frontend starten
 echo ""
 echo "🚀 Starting Frontend on http://localhost:3000..."

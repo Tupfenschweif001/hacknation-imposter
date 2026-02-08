@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Card,
   CardContent,
@@ -14,20 +15,108 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ContactSuggestionsModal } from "@/components/contact-suggestions-modal";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, Search } from "lucide-react";
+
+interface Contact {
+  name: string;
+  telefonnummer: string;
+}
 
 export default function NewRequestPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [searchingContacts, setSearchingContacts] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [contactsError, setContactsError] = useState<string | null>(null);
+  const [contactsMetadata, setContactsMetadata] = useState<any>(null);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     callback_number: "",
     number_to_call: "",
     preferred_time: "",
-    radius_km: "",
+    radius_km: "10", // Default 10km
   });
+
+  const handleFindContacts = async () => {
+    // Validation
+    if (!formData.description.trim()) {
+      toast.error("Please enter a description first");
+      return;
+    }
+
+    setSearchingContacts(true);
+    setContactsError(null);
+    setShowModal(true);
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      // Call backend API
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+      if (!backendUrl) {
+        throw new Error("Backend URL not configured");
+      }
+
+      const response = await fetch(
+        `${backendUrl}/api/get-contact-suggestions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: user.id,
+            description: formData.description,
+            radius_km: parseInt(formData.radius_km),
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch contacts");
+      }
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || "Failed to fetch contacts");
+      }
+
+      setContacts(data.contacts || []);
+      setContactsMetadata(data.metadata);
+    } catch (error: any) {
+      console.error("Error fetching contacts:", error);
+      setContactsError(
+        error.message || "Failed to fetch contacts. Please try again.",
+      );
+      setContacts([]);
+    } finally {
+      setSearchingContacts(false);
+    }
+  };
+
+  const handleSelectContact = (contact: Contact) => {
+    setSelectedContact(contact);
+    setFormData({
+      ...formData,
+      number_to_call: contact.telefonnummer,
+    });
+    setShowModal(false);
+    toast.success(`Selected: ${contact.name}`);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,10 +263,58 @@ export default function NewRequestPage() {
               />
             </div>
 
+            {/* Search Radius Selector */}
+            <div className="space-y-3">
+              <Label>Search Radius</Label>
+              <RadioGroup
+                value={formData.radius_km}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, radius_km: value })
+                }
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="5" id="radius-5" />
+                  <Label htmlFor="radius-5" className="cursor-pointer">
+                    5 km
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="10" id="radius-10" />
+                  <Label htmlFor="radius-10" className="cursor-pointer">
+                    10 km
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="20" id="radius-20" />
+                  <Label htmlFor="radius-20" className="cursor-pointer">
+                    20 km
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* Find Contacts Button */}
+            <div className="pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleFindContacts}
+                disabled={loading || !formData.description.trim()}
+                className="w-full rounded-xl border-violet-200 hover:bg-violet-50 dark:hover:bg-violet-950"
+              >
+                <Search className="mr-2 h-4 w-4" />
+                Find Contacts Nearby
+              </Button>
+              {selectedContact && (
+                <p className="text-sm text-muted-foreground mt-2 text-center">
+                  Selected: <span className="font-medium">{selectedContact.name}</span>
+                </p>
+              )}
+            </div>
+
             <div className="space-y-2">
-              <Label htmlFor="number_to_call">
-                Contact Number
-              </Label>
+              <Label htmlFor="number_to_call">Contact Number</Label>
               <Input
                 id="number_to_call"
                 name="number_to_call"
@@ -188,6 +325,9 @@ export default function NewRequestPage() {
                 disabled={loading}
                 className="rounded-lg"
               />
+              <p className="text-xs text-muted-foreground">
+                Leave empty to use contact from search, or enter manually
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -234,6 +374,17 @@ export default function NewRequestPage() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Contact Suggestions Modal */}
+      <ContactSuggestionsModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        contacts={contacts}
+        loading={searchingContacts}
+        error={contactsError}
+        metadata={contactsMetadata}
+        onSelectContact={handleSelectContact}
+      />
     </div>
   );
 }

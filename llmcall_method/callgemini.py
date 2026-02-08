@@ -1,10 +1,9 @@
 import os
+import json
 from dotenv import load_dotenv
 import google.generativeai as genai
 from supabase import create_client
 
-# from elevenlabs import ElevenLabs
- 
 load_dotenv()
 
 def get_supabase_client():
@@ -28,17 +27,159 @@ def generate_response(prompt):
     genai.configure(api_key=api_key)
     
     # 1. LLM-Request mit Gemini (kostenlos!)
-    # Available models: gemini-2.0-flash, gemini-2.5-flash, etc.
     model = genai.GenerativeModel('gemini-2.5-flash')
     response = model.generate_content(prompt)
     return response.text
 
-if __name__ == "__main__":
+def extract_service_type(description: str) -> str:
+    """
+    Extrahiert den Service-Typ aus der Description
+    
+    Args:
+        description: User's request description
+        
+    Returns:
+        Service type string (e.g., "Arztpraxen", "Zahnarztpraxen")
+    """
+    description_lower = description.lower()
+    
+    # Keyword Mapping
+    keywords = {
+        'zahnarzt': 'Zahnarztpraxen',
+        'zahn': 'Zahnarztpraxen',
+        'arzt': 'Arztpraxen',
+        'hausarzt': 'Hausarztpraxen',
+        'allgemeinmedizin': 'Arztpraxen',
+        'friseur': 'Friseursalons',
+        'frisör': 'Friseursalons',
+        'haare': 'Friseursalons',
+        'klempner': 'Klempner',
+        'sanitär': 'Klempner',
+        'elektriker': 'Elektriker',
+        'elektro': 'Elektriker',
+        'mechaniker': 'Autowerkstätten',
+        'werkstatt': 'Autowerkstätten',
+        'auto': 'Autowerkstätten',
+        'restaurant': 'Restaurants',
+        'essen': 'Restaurants',
+        'physiotherapie': 'Physiotherapiepraxen',
+        'physio': 'Physiotherapiepraxen',
+        'massage': 'Massagepraxen',
+        'apotheke': 'Apotheken',
+    }
+    
+    # Suche nach Keywords
+    for keyword, service in keywords.items():
+        if keyword in description_lower:
+            return service
+    
+    # Fallback
+    return 'Dienstleister'
+
+def getcontactinfo(street: str, postal_code: str, description: str, radius_km: int = 10) -> list:
+    """
+    Findet Kontakte in der Nähe basierend auf Description
+    
+    Args:
+        street: Straßenname
+        postal_code: Postleitzahl
+        description: Beschreibung des gewünschten Services
+        radius_km: Suchradius in Kilometern (5, 10, 20)
+        
+    Returns:
+        Liste von Kontakten mit Name und Telefonnummer
+    """
+    
+    load_dotenv()
+    
+    # Gemini konfigurieren
+    api_key = os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        raise ValueError("GOOGLE_API_KEY is not set in environment variables.")
+    
+    genai.configure(api_key=api_key)
+    
+    # Service-Typ extrahieren
+    service_type = extract_service_type(description)
+    
+    print("\n" + "="*70)
+    print("🔍 CONTACT SEARCH")
+    print("="*70)
+    print(f"📍 Location: {street}, {postal_code}")
+    print(f"🎯 Service Type: {service_type}")
+    print(f"📏 Radius: {radius_km} km")
+    print(f"📝 Description: {description}")
+    print("="*70)
+    
+    # Prompt erstellen
+    prompt = f"""Gebe in einem JSON Format ohne sonstigen Inhalt die 10 {service_type} zurück, 
+die von der Entfernung am kürzesten von {street} in {postal_code} entfernt sind 
+(maximal {radius_km} km Radius).
+
+Für jeden Eintrag gebe zurück:
+- name: Name der Praxis/des Geschäfts
+- telefonnummer: Telefonnummer im Format 0XXX XXXXXX
+
+Beispiel Format:
+[
+  {{"name": "Praxis Dr. Müller", "telefonnummer": "0721 123456"}},
+  {{"name": "Praxis Dr. Schmidt", "telefonnummer": "0721 234567"}}
+]
+
+Gebe NUR das JSON Array zurück, keine zusätzlichen Erklärungen."""
+    
+    print("\n📤 PROMPT:")
+    print("-"*70)
+    print(prompt)
+    print("-"*70)
+    
+    # LLM Call
+    model = genai.GenerativeModel('gemini-2.5-flash')
+    response = model.generate_content(prompt)
+    llm_result = response.text
+    
+    print("\n📥 GEMINI RAW OUTPUT:")
+    print("-"*70)
+    print(llm_result)
+    print("-"*70)
+    
+    # Parse JSON
+    extracted_data = []
+    
     try:
-        llm_result = generate_response("Erkläre mir Quantenphysik kurz")
-        print(f"Gemini sagt: {llm_result}")
-    except Exception as e:
-        print(f"Error: {e}")
+        # Isolate JSON part
+        start_index = llm_result.find('[')
+        end_index = llm_result.rfind(']') + 1
+        
+        if start_index != -1 and end_index != 0:
+            json_string = llm_result[start_index:end_index]
+            
+            # Parse JSON
+            full_data = json.loads(json_string)
+            
+            # Extract name and phone
+            for entry in full_data:
+                contact_info = {
+                    "name": entry.get("name"),
+                    "telefonnummer": entry.get("telefonnummer")
+                }
+                extracted_data.append(contact_info)
+            
+            print("\n✅ PARSED CONTACTS:")
+            print("-"*70)
+            for i, contact in enumerate(extracted_data, 1):
+                print(f"{i}. {contact['name']} - {contact['telefonnummer']}")
+            print("="*70 + "\n")
+            
+        else:
+            print("❌ Error: Could not find JSON array in response")
+            
+    except json.JSONDecodeError as e:
+        print(f"❌ Error parsing JSON: {e}")
+        print("="*70 + "\n")
+    
+    return extracted_data
+
 
 def generate_llm_reply(user_input, history):
     prompt = f"""
@@ -99,53 +240,19 @@ def generate_llm_start(request_id, title=None, description=None):
     
     return generate_response(prompt)
 
-def getcontactinfo():
-   straße = "Nancystraße"
-   postleitzahl = "76187"
-   
-   load_dotenv()
-   # Gemini konfigurieren
-   genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
-    
-   # 1. LLM-Request mit Gemini (kostenlos!)
-   model = genai.GenerativeModel('gemini-2.5-flash')  # Kostenlose Version
-   response = model.generate_content("Gebe in einem json Format ohne sonstigen Inhalt die 10 Arztpraxen die von der Entfernung am kürzesten von {straße} in {postleitzahl} entfernt sind mit den zugehörigen Telephonnummern")
-   llm_result = response.text
-   
-   for m in genai.list_models():
-       print(m.name, m.supported_generation_methods)
-    
-   print(f"Gemini sagt: {llm_result}")
-   
-   output_filename = "contacts.json"
-   extracted_data = []
-   
-   try:
-       # 1. Isolate the JSON part of the string
-       start_index = llm_result.find('[')
-       end_index = llm_result.rfind(']') + 1
-   
-       if start_index != -1 and end_index != 0:
-           json_string = llm_result[start_index:end_index]
-   
-           # 2. Parse the string into a Python list of dictionaries
-           full_data = json.loads(json_string)
-   
-           # 3. Process the data to extract only the name and phone number
-           for entry in full_data:
-               contact_info = {
-                   "name": entry.get("name"),
-                   "telefonnummer": entry.get("telefonnummer")
-               }
-               extracted_data.append(contact_info)
-   
-           # 4. Save the newly created list to a JSON file
-           with open(output_filename, 'w', encoding='utf-8') as f:
-               # Use ensure_ascii=False to correctly save characters like 'ü'
-               json.dump(extracted_data, f, indent=4, ensure_ascii=False)
-           print(f"Successfully processed the data and saved it to '{output_filename}'")
-   
-       else:
-           print("Error: Could not find a JSON list ('[...]') in the provided text.")
-   except json.JSONDecodeError as e:
-       print(f"Error parsing JSON: {e}") ####
+
+# Test-Funktion
+if __name__ == "__main__":
+    try:
+        # Test mit Beispiel-Daten
+        contacts = getcontactinfo(
+            street="Nancystraße",
+            postal_code="76187",
+            description="Zahnarzt Termin für Zahnreinigung",
+            radius_km=10
+        )
+        
+        print(f"\n✅ Found {len(contacts)} contacts")
+        
+    except Exception as e:
+        print(f"❌ Error: {e}")
