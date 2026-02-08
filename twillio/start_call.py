@@ -24,7 +24,7 @@ if not webhook_url.endswith('/voice'):
 
 
 def start_call(number=None, request_id=None, title=None, description=None):
-    to_number = os.getenv('TARGET_PHONE_NUMBER')
+    to_number = number or os.getenv('TARGET_PHONE_NUMBER')
     if not to_number:
         raise ValueError("TARGET_PHONE_NUMBER ist nicht gesetzt und keine Nummer wurde übergeben.")
 
