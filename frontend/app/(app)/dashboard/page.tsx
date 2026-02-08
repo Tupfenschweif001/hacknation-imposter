@@ -80,8 +80,8 @@ export default function DashboardPage() {
     <div className="p-8 h-full flex flex-col">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Manage your appointment requests</p>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground mt-1">Manage your appointment requests</p>
         </div>
         <Button
           onClick={() => router.push('/new')}

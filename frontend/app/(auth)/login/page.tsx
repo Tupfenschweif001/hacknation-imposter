@@ -43,13 +43,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-white to-purple-50 p-4">
-      <Card className="w-full max-w-md rounded-2xl shadow-lg border-gray-200">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-4">
+      <Card className="w-full max-w-md rounded-2xl shadow-lg border-border">
         <CardHeader className="space-y-1">
           <CardTitle className="text-3xl font-bold text-center bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
             Voice AI Agent
           </CardTitle>
-          <CardDescription className="text-center text-gray-600">
+            <CardDescription className="text-center text-muted-foreground">
             Sign in to continue
           </CardDescription>
         </CardHeader>
@@ -96,7 +96,7 @@ export default function LoginPage() {
               )}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm text-gray-600">
+          <div className="mt-4 text-center text-sm text-muted-foreground">
             Don't have an account?{' '}
             <Link href="/register" className="text-violet-600 hover:text-violet-700 font-medium">
               Sign up

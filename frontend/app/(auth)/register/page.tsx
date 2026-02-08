@@ -25,6 +25,58 @@ export default function RegisterPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateField = (name: string, value: string): string => {
+    const validationRules: Record<string, { pattern: RegExp; message: string }> = {
+      houseNumber: {
+        pattern: /^\d+[a-zA-Z]?(-\d+)?$/,
+        message: 'Nur Zahlen und optional Buchstaben (z.B. 12a)',
+      },
+      postalCode: {
+        pattern: /^\d{5}$/,
+        message: 'PLZ muss genau 5 Ziffern haben',
+      },
+      city: {
+        pattern: /^[a-zA-ZäöüÄÖÜß\s-]+$/,
+        message: 'Nur Buchstaben, Leerzeichen und Bindestriche erlaubt',
+      },
+      street: {
+        pattern: /^[a-zA-ZäöüÄÖÜß0-9\s.-]+$/,
+        message: 'Nur Buchstaben, Zahlen, Leerzeichen und . - erlaubt',
+      },
+      country: {
+        pattern: /^[a-zA-ZäöüÄÖÜß\s-]+$/,
+        message: 'Nur Buchstaben, Leerzeichen und Bindestriche erlaubt',
+      },
+      phoneNumber: {
+        pattern: /^[\d\s\-+()]+$/,
+        message: 'Nur Zahlen, +, -, Leerzeichen und Klammern erlaubt',
+      },
+    };
+
+    if (!value) return ''; // Empty is ok for optional fields
+
+    const rule = validationRules[name];
+    if (rule && !rule.pattern.test(value)) {
+      return rule.message;
+    }
+
+    return '';
+  };
+
+  const handleFieldChange = (name: string, value: string, setter: (value: string) => void) => {
+    setter(value);
+    const error = validateField(name, value);
+    setErrors({
+      ...errors,
+      [name]: error,
+    });
+  };
+
+  const hasErrors = () => {
+    return Object.values(errors).some(error => error !== '');
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,13 +156,13 @@ export default function RegisterPage() {
 
   if (showEmailConfirmation) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-white to-purple-50 p-4">
-        <Card className="w-full max-w-md rounded-2xl shadow-lg border-gray-200">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-4">
+      <Card className="w-full max-w-md rounded-2xl shadow-lg border-border">
           <CardHeader className="space-y-1">
             <CardTitle className="text-3xl font-bold text-center bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
               Check Your Email
             </CardTitle>
-            <CardDescription className="text-center text-gray-600">
+            <CardDescription className="text-center text-muted-foreground">
               We've sent you a confirmation link
             </CardDescription>
           </CardHeader>
@@ -136,8 +188,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-white to-purple-50 p-4">
-      <Card className="w-full max-w-md rounded-2xl shadow-lg border-gray-200">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-4">
+      <Card className="w-full max-w-md rounded-2xl shadow-lg border-border">
         <CardHeader className="space-y-1">
           <CardTitle className="text-3xl font-bold text-center bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
             Create Account
@@ -188,11 +240,14 @@ export default function RegisterPage() {
                 name="street"
                 placeholder="Musterstraße"
                 value={street}
-                onChange={(e) => setStreet(e.target.value)}
+                onChange={(e) => handleFieldChange('street', e.target.value, setStreet)}
                 required
                 disabled={loading}
-                className="rounded-lg"
+                className={`rounded-lg ${errors.street ? 'border-red-500' : ''}`}
               />
+              {errors.street && (
+                <p className="text-xs text-red-600">{errors.street}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -205,11 +260,14 @@ export default function RegisterPage() {
                   name="houseNumber"
                   placeholder="123"
                   value={houseNumber}
-                  onChange={(e) => setHouseNumber(e.target.value)}
+                  onChange={(e) => handleFieldChange('houseNumber', e.target.value, setHouseNumber)}
                   required
                   disabled={loading}
-                  className="rounded-lg"
+                  className={`rounded-lg ${errors.houseNumber ? 'border-red-500' : ''}`}
                 />
+                {errors.houseNumber && (
+                  <p className="text-xs text-red-600">{errors.houseNumber}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -221,11 +279,15 @@ export default function RegisterPage() {
                   name="postalCode"
                   placeholder="12345"
                   value={postalCode}
-                  onChange={(e) => setPostalCode(e.target.value)}
+                  onChange={(e) => handleFieldChange('postalCode', e.target.value, setPostalCode)}
                   required
                   disabled={loading}
-                  className="rounded-lg"
+                  className={`rounded-lg ${errors.postalCode ? 'border-red-500' : ''}`}
+                  maxLength={5}
                 />
+                {errors.postalCode && (
+                  <p className="text-xs text-red-600">{errors.postalCode}</p>
+                )}
               </div>
             </div>
 
@@ -238,11 +300,14 @@ export default function RegisterPage() {
                 name="city"
                 placeholder="Berlin"
                 value={city}
-                onChange={(e) => setCity(e.target.value)}
+                onChange={(e) => handleFieldChange('city', e.target.value, setCity)}
                 required
                 disabled={loading}
-                className="rounded-lg"
+                className={`rounded-lg ${errors.city ? 'border-red-500' : ''}`}
               />
+              {errors.city && (
+                <p className="text-xs text-red-600">{errors.city}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -254,11 +319,14 @@ export default function RegisterPage() {
                 name="country"
                 placeholder="Germany"
                 value={country}
-                onChange={(e) => setCountry(e.target.value)}
+                onChange={(e) => handleFieldChange('country', e.target.value, setCountry)}
                 required
                 disabled={loading}
-                className="rounded-lg"
+                className={`rounded-lg ${errors.country ? 'border-red-500' : ''}`}
               />
+              {errors.country && (
+                <p className="text-xs text-red-600">{errors.country}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -269,10 +337,13 @@ export default function RegisterPage() {
                 type="tel"
                 placeholder="+49 123 456789"
                 value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
+                onChange={(e) => handleFieldChange('phoneNumber', e.target.value, setPhoneNumber)}
                 disabled={loading}
-                className="rounded-lg"
+                className={`rounded-lg ${errors.phoneNumber ? 'border-red-500' : ''}`}
               />
+              {errors.phoneNumber && (
+                <p className="text-xs text-red-600">{errors.phoneNumber}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -308,7 +379,7 @@ export default function RegisterPage() {
             <Button
               type="submit"
               className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
-              disabled={loading}
+              disabled={loading || hasErrors()}
             >
               {loading ? (
                 <>
@@ -320,7 +391,7 @@ export default function RegisterPage() {
               )}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm text-gray-600">
+          <div className="mt-4 text-center text-sm text-muted-foreground">
             Already have an account?{' '}
             <Link href="/login" className="text-violet-600 hover:text-violet-700 font-medium">
               Sign in
