@@ -37,7 +37,7 @@ class ProcessRequestPayload(BaseModel):
     user_id: str = Field(..., min_length=1)
     title: str = Field(..., min_length=1)
     description: str = Field(..., min_length=1)
-    callback_number: str = Field(..., min_length=1)
+    callback_number: str = Field(..., min_length=0)
     number_to_call: Optional[str] = None
     preferred_time: str = Field(..., min_length=1)
     user_profile: Optional[UserProfile] = None
