@@ -16,6 +16,7 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from twillio.start_call import start_call
+from backend.contact_suggestions import get_contact_suggestions
 
 load_dotenv()
 
@@ -57,9 +58,41 @@ class ProcessRequestResponse(BaseModel):
     request_id: str
 
 
+class ContactSuggestionsPayload(BaseModel):
+    user_id: str = Field(..., min_length=1)
+    description: str = Field(..., min_length=1)
+    radius_km: int = Field(default=10, ge=5, le=20)
+
+
+class ContactSuggestionsResponse(BaseModel):
+    success: bool
+    contacts: list
+    metadata: Optional[dict] = None
+    error: Optional[str] = None
+
+
 @app.get("/health")
 def health_check() -> dict:
     return {"status": "ok"}
+
+
+@app.post("/api/get-contact-suggestions", response_model=ContactSuggestionsResponse)
+async def get_contact_suggestions_endpoint(payload: ContactSuggestionsPayload) -> ContactSuggestionsResponse:
+    """
+    Findet Kontakt-Vorschläge basierend auf User-Profil und Description
+    """
+    try:
+        result = await get_contact_suggestions(
+            user_id=payload.user_id,
+            description=payload.description,
+            radius_km=payload.radius_km
+        )
+        
+        return ContactSuggestionsResponse(**result)
+        
+    except Exception as e:
+        print(f"❌ Error in contact suggestions endpoint: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/api/process-request", response_model=ProcessRequestResponse)

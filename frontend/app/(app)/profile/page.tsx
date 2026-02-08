@@ -55,15 +55,14 @@ export default function ProfilePage() {
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("user_id", user.id)
-        .single();
+        .eq("user_id", user.id);
 
-      if (error && error.code !== "PGRST116") {
+      if (error) {
         throw error;
       }
 
-      if (data) {
-        setProfile(data);
+      if (data && data.length > 0) {
+        setProfile(data[0]);
       } else {
         // Create default profile
         setProfile({
