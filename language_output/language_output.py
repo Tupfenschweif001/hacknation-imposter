@@ -23,11 +23,18 @@ def talk(a):
                 model_id="eleven_multilingual_v2"
             )
  
-        with open("output.mp3", "wb") as f:
+        output_dir = os.path.dirname(os.path.abspath(__file__))
+        output_path = os.path.join(output_dir, "output.mp3")
+
+        with open(output_path, "wb") as f:
             for chunk in audio_stream:
                 f.write(chunk)
+        
+        return "output.mp3"
+
     except Exception as e:
         print(f"An error occurred: {e}")
+        return None
  
  
 def newvoice():

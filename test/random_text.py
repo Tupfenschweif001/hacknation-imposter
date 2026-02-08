@@ -1,5 +1,5 @@
 import random
-from language_output.language_output import tts
+from language_output.language_output import talk
 
 
 def get_random_test_text():
@@ -21,4 +21,4 @@ if __name__ == "__main__":
 
 
 def test_tts_twillio():
-    return tts(get_random_test_text())
+    return talk(get_random_test_text())

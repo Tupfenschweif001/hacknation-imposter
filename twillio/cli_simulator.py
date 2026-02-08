@@ -88,7 +88,9 @@ def handle_twiml(twiml, base_url):
             url = (node.text or "").strip()
             if url:
                 print(f"Assistant (audio): {url}")
-            play_remote_audio(url, base_url=base_url)
+                play_remote_audio(url, base_url=base_url)
+            else:
+                print("Warning: <Play> tag with no URL found.")
         elif tag == "Gather":
             prompt = None
             for child in node:

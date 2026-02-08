@@ -16,7 +16,10 @@ def serve_audio(filename):
     return send_from_directory(audio_dir, filename)
 
 def llm_reply(user_text):
-    return test_tts_twillio()
+    filename = test_tts_twillio()
+    if filename:
+        return f"/audio/{filename}"
+    return None
     #return "/test/test_audio.mp3"
 
 def llm_start():
