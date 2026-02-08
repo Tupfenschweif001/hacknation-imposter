@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import asyncio
+import time
+from datetime import datetime, timedelta, time as dtime
 import os
 from typing import Optional
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from twillio.start_call import start_call
 
 load_dotenv()
 
@@ -54,9 +58,78 @@ def health_check() -> dict:
 
 
 @app.post("/api/process-request", response_model=ProcessRequestResponse)
-def process_request(payload: ProcessRequestPayload) -> ProcessRequestResponse:
+async def process_request(payload: ProcessRequestPayload, background_tasks: BackgroundTasks) -> ProcessRequestResponse:
     if not payload.request_id or not payload.user_id:
         raise HTTPException(status_code=400, detail="Invalid request")
 
-    # TODO: Implement queueing / background processing
+    # Der Task wird in den Hintergrund verschoben. Die API antwortet SOFORT.
+    background_tasks.add_task(start_new_call, payload.request_id)
+    
     return ProcessRequestResponse(status="accepted", request_id=payload.request_id)
+
+
+async def start_new_call(request_id):
+    """
+    Startet den Anruf asynchron. Wenn wir außerhalb der Geschäftszeiten sind,
+    wartet diese Funktion (non-blocking) bis zur nächsten Startzeit.
+    """
+    if is_business_hours():
+        start_call()
+        return
+
+    run_at = next_business_datetime()
+    delay_seconds = max(0, (run_at - datetime.now()).total_seconds())
+    
+    if delay_seconds > 0:
+        print(f"Außerhalb der Geschäftszeiten. Warte {delay_seconds:.0f} Sekunden ...")
+        # asyncio.sleep blockiert den Server NICHT. time.sleep würde alles anhalten.
+        await asyncio.sleep(delay_seconds)
+
+    print("Geschäftszeit erreicht. Starte Anruf jetzt.")
+    start_call()
+        
+
+
+def is_business_hours():
+    """
+    Prüft ob aktuell Geschäftszeiten sind.
+    Montag-Freitag, 08:00-18:00 Uhr
+    """
+    return True
+    now = datetime.now()
+    
+    # Wochenende
+    if now.weekday() >= 5:  # 5=Samstag, 6=Sonntag
+        return False
+    
+    # Außerhalb 08:00-18:00
+    if now.hour < 8 or now.hour >= 18:
+        return False
+    
+    return True
+
+
+def next_business_datetime(now: datetime | None = None) -> datetime:
+    current = now or datetime.now()
+
+    # If it's weekend, jump to next Monday 08:00
+    if current.weekday() >= 5:
+        days_until_monday = 7 - current.weekday()
+        next_day = (current + timedelta(days=days_until_monday)).date()
+        return datetime.combine(next_day, dtime(hour=8, minute=0))
+
+    # If before business hours, schedule for today 08:00
+    if current.hour < 8:
+        return datetime.combine(current.date(), dtime(hour=8, minute=0))
+
+    # If after business hours, schedule for next weekday 08:00
+    if current.hour >= 18:
+        next_day = current.date() + timedelta(days=1)
+        while next_day.weekday() >= 5:
+            next_day += timedelta(days=1)
+        return datetime.combine(next_day, dtime(hour=8, minute=0))
+
+    return current
+
+
+
