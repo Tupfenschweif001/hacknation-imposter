@@ -1,0 +1,42 @@
+[
+    {
+        "name": "Praxis Dr. Schmidt",
+        "telefonnummer": "+49 30 1234567"
+    },
+    {
+        "name": "Gemeinschaftspraxis Muster & Meier",
+        "telefonnummer": "+49 30 9876543"
+    },
+    {
+        "name": "Kinderarztpraxis Sonnenschein",
+        "telefonnummer": "+49 30 2468135"
+    },
+    {
+        "name": "Zahnarztpraxis am Markt",
+        "telefonnummer": "+49 30 1122334"
+    },
+    {
+        "name": "Hautarztzentrum Berlin Mitte",
+        "telefonnummer": "+49 30 5566778"
+    },
+    {
+        "name": "Orthopädische Praxis am Park",
+        "telefonnummer": "+49 30 9988776"
+    },
+    {
+        "name": "Augenarztpraxis Blickklar",
+        "telefonnummer": "+49 30 1020304"
+    },
+    {
+        "name": "HNO Praxis am Rathaus",
+        "telefonnummer": "+49 30 5060708"
+    },
+    {
+        "name": "Internistische Praxis Gesundleben",
+        "telefonnummer": "+49 30 2233445"
+    },
+    {
+        "name": "Praxis für Allgemeinmedizin Dr. Schulz",
+        "telefonnummer": "+49 30 8877665"
+    }
+]
