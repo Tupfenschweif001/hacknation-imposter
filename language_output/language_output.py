@@ -2,15 +2,16 @@ import os
 from dotenv import load_dotenv
 from elevenlabs.client import ElevenLabs
  
+import uuid
+
 def talk(a):
     load_dotenv(override=True)
+    # ... (restlicher Auth Code) ...
     client = ElevenLabs(api_key=os.getenv("meinapitoken"))
     api_key = os.getenv("meinapitoken")
-    # a = "The connection is finally working!" #change this to the LLM response
     voice_1 = "9BWtsMINqrJLrRacOk9x"
-    client = ElevenLabs(api_key=api_key)
+    
     print("Generating dialogue...")
-    dialogue_bytes = b""
     if not api_key:
         print("❌ TokenERROR")
         exit()
@@ -24,13 +25,17 @@ def talk(a):
             )
  
         output_dir = os.path.dirname(os.path.abspath(__file__))
-        output_path = os.path.join(output_dir, "output.mp3")
+        
+        # FIX: Eindeutigen Dateinamen generieren!
+        unique_filename = f"output_{uuid.uuid4().hex[:8]}.mp3"
+        output_path = os.path.join(output_dir, unique_filename)
 
         with open(output_path, "wb") as f:
             for chunk in audio_stream:
                 f.write(chunk)
         
-        return "output.mp3"
+        # Den neuen, eindeutigen Namen zurückgeben
+        return unique_filename
 
     except Exception as e:
         print(f"An error occurred: {e}")

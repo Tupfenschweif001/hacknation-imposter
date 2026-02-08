@@ -8,3 +8,4 @@ fastapi
 uvicorn[standard]
 gunicorn
 google-generativeai
+supabase

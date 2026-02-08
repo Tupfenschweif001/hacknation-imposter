@@ -2,14 +2,18 @@ from pathlib import Path
 import sys
 import os
 
+# Pfad erweitern, damit Module im Root-Verzeichnis gefunden werden
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from flask import Flask, request, send_from_directory
 from twilio.twiml.voice_response import VoiceResponse, Gather
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from language_output.language_output import talk
+from llmcall_method.callgemini import generate_llm_reply, generate_llm_start
 from test.random_text import test_tts_twillio
 
 app = Flask(__name__)
 
+history = []
 
 @app.route("/audio/<path:filename>")
 def serve_audio(filename):
@@ -17,14 +21,25 @@ def serve_audio(filename):
     return send_from_directory(audio_dir, filename)
 
 def llm_reply(user_text):
-    filename = test_tts_twillio()
+    print(f"User sagte: {user_text}") # Debugging
+    text = generate_llm_reply(user_text, history)
+    history.append(text)
+    filename = talk(text)
     if filename:
         return f"/audio/{filename}"
     return None
-    #return "/test/test_audio.mp3"
 
-def llm_start():
-    return "/test/test_audio.mp3"
+def llm_start(request_id, title=None, description=None):
+    text = generate_llm_start(request_id, title, description)
+    print("AI Start Text:", text)
+    history.append(text)
+    
+    # Jetzt bekommen wir einen eindeutigen Dateinamen zurück (z.B. output_39f8a.mp3)
+    filename = talk(text)
+    
+    if filename:
+        return f"/audio/{filename}"
+    return None
 
 
 def build_gather(prompt_text=None):
@@ -44,11 +59,15 @@ def build_gather(prompt_text=None):
 
 
 
-@app.route("/start_conversation", methods=['GET', 'POST'])
-def start_conversation():
+@app.route("/voice", methods=['GET', 'POST'])
+def voice():
     """Start the conversation."""
+    request_id = request.values.get("request_id")
+    title = request.values.get("title")
+    description = request.values.get("description")
+
     resp = VoiceResponse()
-    resp.play(llm_start())
+    resp.play(llm_start(request_id, title, description))
     resp.append(build_gather())
     return str(resp)
 
