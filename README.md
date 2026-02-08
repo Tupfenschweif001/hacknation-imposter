@@ -5,15 +5,21 @@ Demo-Webapp of a Voice-Agent that manages phone calls and appointments. Develope
 ## 🚀 Quick Start
 
 1. clone the git repository
-2. add a local .env file in the outer scope
-3. add the nessecary api-tokens in the following format:
+
+2. pip install -r equirements.txt
+3. pip install node
+4. ./setup.sh
+5. add a local .env file in the outer scope
+6. add the nessecary api-tokens in the following format:
      - TWILIO_ACCOUNT_SID= ## add you twilio account id
      - TWILIO_AUTH_TOKEN= ## add your twilio authentication token 
      - TWILIO_PHONE_NUMBER=+17348758446
      - TARGET_PHONE_NUMBER=+4917645628259 ##
      - ELEVENLABS_API_TOKEN= ## add your elevenlabs_token_here
      - PUBLIC_BASE_URL=https://hacknation-imposter.onrender.com ## this stays as it is
-     - GOOGLE_API_KEY=   ## add your google_api_token 
+     - GOOGLE_API_KEY=   ## add your google_api_token pip install node
+7. ./start.sh
+
 
 ## 🎯 Features
 
