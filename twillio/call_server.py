@@ -1,5 +1,6 @@
 from pathlib import Path
 import sys
+import os
 
 from flask import Flask, request, send_from_directory
 from twilio.twiml.voice_response import VoiceResponse, Gather
@@ -72,6 +73,7 @@ def gather():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    port = int(os.environ.get("PORT", 5001))
+    app.run(debug=True, host='0.0.0.0', port=port)
 
 
